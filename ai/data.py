@@ -4,8 +4,6 @@ import tokens
 import config
 import numpy as np
 
-# 'ai/data/data/chriso/gauged/test.py'
-
 def fetch(pyfile):
     ret = ''
     
