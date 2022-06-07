@@ -23,13 +23,16 @@ class GruModel(nn.Module):
         self.gru = nn.GRU(128, 128, batch_first=True)
         
         self.block1 = nn.Sequential(
-            Block(32, 64),
+            Block(8, 64),
             Block(64, 128),
+            Block(128, 128),
             Block(128, 128),
         )
         
         self.block2 = nn.Sequential(
-            nn.Linear(4096, 512),
+            nn.Linear(4096, 2048),
+            nn.ReLU(),
+            nn.Linear(2048, 512),
             nn.ReLU(),
             nn.Linear(512, 256),
             nn.ReLU(),
@@ -45,7 +48,7 @@ class GruModel(nn.Module):
         return x
 
 if __name__ == '__main__':
-    model = GruModel(emb_dim=32, num_tokens=137, num_classes=137)
-    data = torch.zeros(128, 32).long()
+    model = GruModel(emb_dim=8, num_tokens=137, num_classes=137)
+    data = torch.zeros(32, 32).long()
     out = model(data)
     print(out.shape)
