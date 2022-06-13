@@ -32,7 +32,7 @@ class SelfAttention(nn.Module):
         out = out.transpose(1, 2).contiguous().view(b, t, h * k)
         return self.unifyheads(out)
     
-class TransformerBlock(nn.Module):
+class TransformerEncoder(nn.Module):
     def __init__(self, k, heads):
         super().__init__()
         self.attention = SelfAttention(k, heads=heads)
@@ -54,9 +54,9 @@ class TransformerBlock(nn.Module):
 class Transformer(nn.Module):
     def __init__(
         self, 
-        k, 
+        emb_dim, 
         heads, 
-        depth, 
+        num_encoder_layers, 
         seq_length, 
         num_tokens, 
         num_classes, 
@@ -65,14 +65,19 @@ class Transformer(nn.Module):
         super().__init__()
         self.device = device
         self.num_tokens = num_tokens
-        self.token_emb = nn.Embedding(num_tokens, k).to(device)
-        self.pos_emb = nn.Embedding(seq_length, k).to(device)
+        self.token_emb = nn.Embedding(num_tokens, emb_dim).to(device)
+        self.pos_emb = nn.Embedding(seq_length, emb_dim).to(device)
 
         tblocks = []
-        for i in range(depth):
-            tblocks.append(TransformerBlock(k=k, heads=heads))
+        for i in range(num_encoder_layers):
+            tblocks.append(TransformerEncoder(k=emb_dim, heads=heads))
         self.tblocks = nn.Sequential(*tblocks)
-        self.out = nn.Linear(k, num_classes)
+        self.out_block = nn.Sequential(
+            nn.Linear(512, 256),
+            nn.ReLU(),
+            nn.Linear(256, num_classes)
+        )
+        
         self._to_device()
 
     def forward(self, x):
@@ -83,7 +88,9 @@ class Transformer(nn.Module):
         
         x = tokens + positions
         x = self.tblocks(x)
-        x = self.out(x.mean(dim=1))
+        x = x.view(x.size(0), -1)
+        
+        x = self.out_block(x)
         return x
 
     def _to_device(self):
@@ -91,9 +98,9 @@ class Transformer(nn.Module):
             p.data = p.data.to(self.device)
     
 if __name__ == '__main__':
-    model = Transformer(k=16, heads=8, depth=3, seq_length=16,
-                        num_tokens=88, num_classes=88, device='cuda')
+    model = Transformer(emb_dim=16, heads=8, num_encoder_layers=6, seq_length=32,
+                        num_tokens=157, num_classes=157, device='cuda')
     
-    data = torch.zeros(32, 16).long().to('cuda')
+    data = torch.zeros(1, 32).long().to('cuda')
     out = model(data)
     print(out.shape)

@@ -1,4 +1,3 @@
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -23,7 +22,7 @@ class GruModel(nn.Module):
         self.gru = nn.GRU(128, 128, batch_first=True)
         
         self.block1 = nn.Sequential(
-            Block(8, 64),
+            Block(emb_dim, 64),
             Block(64, 128),
             Block(128, 128),
             Block(128, 128),
@@ -49,6 +48,6 @@ class GruModel(nn.Module):
 
 if __name__ == '__main__':
     model = GruModel(emb_dim=8, num_tokens=137, num_classes=137)
-    data = torch.zeros(32, 32).long()
+    data = torch.zeros(1, 32).long()
     out = model(data)
     print(out.shape)
