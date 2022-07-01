@@ -3,3 +3,5 @@
 *.npy
 *.pt
 *.pth
+debug.py
+app.py

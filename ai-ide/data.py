@@ -7,7 +7,9 @@ import numpy as np
 from tokens import token_to_id, id_to_token
 
 """
-150k Python Dataset  https://www.sri.inf.ethz.ch/py150
+
+150k Python Dataset  
+https://www.sri.inf.ethz.ch/py150
 
 """
 # Python file in one string [str]
@@ -94,11 +96,11 @@ def data_to_xy(data, seq_len):
     return x, y
 
 # Create numpy dataset
-def create_dataset(dataset_size=500000, seq_len=32):
-    paths = list(open('ai/data/python100k_train.txt', 'r'))
+def create_dataset(dataset_size=50000, seq_len=32):
+    paths = list(open('./ai-ide/data/python100k_train.txt', 'r'))
     x_data, y_data = [], []
     for i in range(len(paths)): 
-        tokens = tokenizer(f'ai/data/{paths[i]}'[:-1])
+        tokens = tokenizer(f'./ai-ide/data/{paths[i]}'[:-1])
         if tokens:
             tokens = tokens_to_id(tokens)
             x, y = data_to_xy(tokens, seq_len)
@@ -117,4 +119,4 @@ if __name__ == '__main__':
     #print(tokens)
     #tokens = id_to_tokens(tokens)
     #print(tokens)
-    #create_dataset(dataset_size=100000, seq_len=32)
+    create_dataset(dataset_size=45000000, seq_len=32)
