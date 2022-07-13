@@ -1,7 +1,7 @@
 import time
 import os
 import io
-import tokenize
+import tokenize as tknz
 import config
 import numpy as np
 from tokens import token_to_id, id_to_token
@@ -12,8 +12,8 @@ from tokens import token_to_id, id_to_token
 https://www.sri.inf.ethz.ch/py150
 
 """
-# Python file in one string [str]
-def fetch(pyfile):
+
+def fetch(pyfile: str) -> list[str]:
     ret = ''
     try:
         with open(pyfile, 'r') as file:
@@ -23,19 +23,19 @@ def fetch(pyfile):
         return []
     return [ret]
 
-def extract_keywords(pyfile): 
+def extract_keywords(pyfile: str) -> list[str]: 
     keywords = []
     keywords_info = []
-    with tokenize.open(pyfile) as f:
-        all_tokens = tokenize.generate_tokens(f.readline)
+    with tknz.open(pyfile) as f:
+        all_tokens = tknz.generate_tokens(f.readline)
         for keyword in all_tokens:
             keywords_info.append(keyword)
         for keyword in keywords_info:
             keywords.append(keyword[1])
     return keywords, keywords_info
 
-def tokenizer_processing(tokens):
-    ret_tokens = []
+def tokenize_processing(tokens: list[str]) -> list[str]:
+    ret_tokens = [] 
     # Remove comments and ''
     tokens = list(filter(lambda x: x != '', tokens))
     tokens = list(filter(lambda x: x[0] != '#', tokens))
@@ -55,7 +55,7 @@ def tokenizer_processing(tokens):
     return ret_tokens
 
 # Tokenize .py file
-def tokenizer(pyfile):
+def tokenize(pyfile: str) -> list[str]:
     data = fetch(pyfile)
     if not data:
         return []
@@ -70,37 +70,37 @@ def tokenizer(pyfile):
         tokens.append(s1)
         tokens.append(s2)
         data = data[i+len(keyword):]
-    tokens = tokenizer_processing(tokens)
+    tokens = tokenize_processing(tokens)
     return tokens
 
 # String tokens to integer
-def tokens_to_id(tokens):
+def tokens_to_id(tokens: list[str]) -> list[int]:
     id_tokens = []
     for token in tokens:
         id_tokens.append(token_to_id[token])
     return id_tokens
 
 # Integer tokens to string
-def id_to_tokens(id_tokens):
+def id_to_tokens(id_tokens: list[int]) -> list[str]:
     ret_tokens = []
     for i in id_tokens:
         ret_tokens.append(id_to_token[i])
     return ret_tokens
 
 # Split data on x, y (input, target) 
-def data_to_xy(data, seq_len):
+def data_to_xy(data: list[int], seq_len: int) -> [list[int], list[int]] :
     x, y = [], []
     for i in range(len(data)-seq_len):
         x.append(data[i:i+seq_len])
         y.append(data[i+seq_len])
     return x, y
 
-# Create numpy dataset
-def create_dataset(dataset_size=50000, seq_len=32):
+# Create numpy training dataset
+def create_dataset(dataset_size: int = 1e6, seq_len: int = 32):
     paths = list(open('./ai-ide/data/python100k_train.txt', 'r'))
     x_data, y_data = [], []
     for i in range(len(paths)): 
-        tokens = tokenizer(f'./ai-ide/data/{paths[i]}'[:-1])
+        tokens = tokenize(f'./ai-ide/data/{paths[i]}'[:-1])
         if tokens:
             tokens = tokens_to_id(tokens)
             x, y = data_to_xy(tokens, seq_len)
@@ -113,10 +113,10 @@ def create_dataset(dataset_size=50000, seq_len=32):
             break
 
 if __name__ == '__main__':
-    #tokens = tokenizer('ai/models/grumodel.py')
+    #tokens = tokenize('ai-ide/models/grumodel.py')
     #print(tokens)
     #tokens = tokens_to_id(tokens)
     #print(tokens)
     #tokens = id_to_tokens(tokens)
     #print(tokens)
-    create_dataset(dataset_size=45000000, seq_len=32)
+    create_dataset(dataset_size=10000000, seq_len=32)
